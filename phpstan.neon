@@ -1,0 +1,6 @@
+parameters:
+    level: 8
+    paths:
+        - src
+includes:
+    - vendor/thecodingmachine/phpstan-safe-rule/phpstan-safe-rule.neon
