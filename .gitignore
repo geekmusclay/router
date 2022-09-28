@@ -13,3 +13,6 @@ composer.lock
 
 # Dev Local
 index.php
+
+# PHPUnit
+.phpunit.result.cache
