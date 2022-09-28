@@ -165,7 +165,17 @@ class Route
      */
     public function getMatches(): array
     {
-        return $this->matches;
+        $res = [];
+        foreach ($this->params as $param => $regex) {
+            $regex = '(' . $regex . ')';
+            foreach ($this->matches as $match) {
+                if (preg_match($regex, $match)) {
+                    $res[$param] = $match;
+                }
+            }
+        }
+
+        return $res;
     }
 
     /**
