@@ -6,29 +6,17 @@ namespace Geekmusclay\Router;
 
 use Exception;
 use Geekmusclay\Router\Route;
+use Psr\Http\Message\ServerRequestInterface;
 
 use function trim;
 
 class Router
 {
-    /** @var string $url Url to be matched */
-    private string $url;
-
     /** @var Route[] $routes Collection of router routes */
     private array $routes = [];
 
     /** @var Route[] $namesRoutes Collection of named routes */
     private array $namedRoutes = [];
-
-    /**
-     * Router constructor
-     *
-     * @param string $url The url that we want to match
-     */
-    public function __construct(string $url)
-    {
-        $this->url = trim($url, '/');
-    }
 
     /**
      * Router GET function, create a route
@@ -106,6 +94,7 @@ class Router
         $route                   = new Route($path, $callable);
         $this->routes[$method][] = $route;
         if (null !== $name) {
+            $route->setName($name);
             $this->namedRoutes[$name] = $route;
         }
 
@@ -127,24 +116,36 @@ class Router
         return $this->namedRoutes[$name]->path($params);
     }
 
-    /**
-     * Undocumented function
-     *
-     * @return mixed
-     * @throws Exception
-     */
-    public function run()
+    public function match(ServerRequestInterface $request): Route
     {
-        if (false === isset($this->routes[$_SERVER['REQUEST_METHOD']])) {
+        /** @var string $uri Current request uri */
+        $uri = $request->getUri()->getPath();
+        $uri = trim($uri, '/');
+
+        /** @var string $method Request method */
+        $method = $request->getMethod();
+        if (false === isset($this->routes[$method])) {
             throw new Exception('REQUEST_METHOD does not exist');
         }
 
-        foreach ($this->routes[$_SERVER['REQUEST_METHOD']] as $route) {
-            if (true === $route->match($this->url)) {
-                return $route->call();
+        foreach ($this->routes[$method] as $route) {
+            if (true === $route->match($uri)) {
+                return $route;
             }
         }
 
         throw new Exception('No matching routes');
+    }
+
+    /**
+     * Function to launch the router, it will look for the
+     * corresponding route and then launch the callback.
+     *
+     * @return mixed
+     * @throws Exception
+     */
+    public function run(ServerRequestInterface $request)
+    {
+        return $this->match($request)->call();
     }
 }

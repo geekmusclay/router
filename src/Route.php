@@ -30,15 +30,19 @@ class Route
     /** @var array $params Route parameters */
     private array $params = [];
 
+    /** @var string|null $name Route name */
+    private ?string $name;
+
     /**
      * @param string         $path     Route path
      * @param array|callable $callable Route callback function
-     *                                  or string to specify controller and function
+     *                                 or array to specify controller and function
      */
-    public function __construct(string $path, $callable)
+    public function __construct(string $path, $callable, ?string $name = null)
     {
         $this->path     = $path;
         $this->callable = $callable;
+        $this->name     = $name;
     }
 
     /**
@@ -54,6 +58,25 @@ class Route
         }
 
         return $url;
+    }
+
+    /**
+     * Checks if the route matches the url
+     *
+     * @param string $url Url to check
+     */
+    public function match(string $url): bool
+    {
+        $path  = trim($this->path, '/');
+        $path  = preg_replace_callback('#:([\w]+)#', [$this, 'paramMatch'], $path);
+        $regex = "/^" . str_replace('/', '\/', $path) . "$/i";
+
+        if (0 === preg_match($regex, $url, $this->matches)) {
+            return false;
+        }
+        array_shift($this->matches);
+
+        return true;
     }
 
     /**
@@ -85,22 +108,23 @@ class Route
     }
 
     /**
-     * Checks if the route matches the url
+     * Executes the route callable
      *
-     * @param string $url Url to check
+     * @return mixed The return is almost whatever is inside callable
      */
-    public function match(string $url): bool
+    public function call()
     {
-        $path  = trim($this->path, '/');
-        $path  = preg_replace_callback('#:([\w]+)#', [$this, 'paramMatch'], $path);
-        $regex = "/^" . str_replace('/', '\/', $path) . "$/i";
-
-        if (0 === preg_match($regex, $url, $this->matches)) {
-            return false;
+        if (true === is_array($this->callable) && 2 === count($this->callable)) {
+            return call_user_func_array(
+                [
+                    new $this->callable[0](),
+                    $this->callable[1],
+                ],
+                $this->cast($this->matches)
+            );
         }
-        array_shift($this->matches);
 
-        return true;
+        return call_user_func_array($this->callable, $this->cast($this->matches));
     }
 
     /**
@@ -125,22 +149,53 @@ class Route
     }
 
     /**
-     * Executes the route callable
+     * Return the route parameters
      *
-     * @return mixed
+     * @return array
      */
-    public function call()
+    public function getParameters(): array
     {
-        if (true === is_array($this->callable) && 2 === count($this->callable)) {
-            return call_user_func_array(
-                [
-                    new $this->callable[0](),
-                    $this->callable[1],
-                ],
-                $this->cast($this->matches)
-            );
-        }
+        return $this->params;
+    }
 
-        return call_user_func_array($this->callable, $this->cast($this->matches));
+    /**
+     * Get route matches after running the match function
+     *
+     * @return array Matches foud in the url
+     */
+    public function getMatches(): array
+    {
+        return $this->matches;
+    }
+
+    /**
+     * Get route callable or the array that contain the controller
+     * name and the function to execute in it.
+     *
+     * @return callable|array
+     */
+    public function getCallback()
+    {
+        return $this->callable;
+    }
+
+    /**
+     * Return route name
+     */
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    /**
+     * Set route name
+     *
+     * @param string $name The name of the route
+     */
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
     }
 }
