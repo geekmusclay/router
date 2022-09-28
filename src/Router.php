@@ -116,6 +116,29 @@ class Router
         return $this->namedRoutes[$name]->path($params);
     }
 
+    /**
+     * Find route by his name
+     *
+     * @param string $name Name of the searched route
+     *
+     * @return Route|null
+     */
+    public function find(string $name): ?Route
+    {
+        if (false === isset($this->namedRoutes[$name])) {
+            return null;
+        }
+
+        return $this->namedRoutes[$name];
+    }
+
+    /**
+     * Look for the corresponding route of given request
+     *
+     * @param ServerRequestInterface $request Request to match
+     *
+     * @return Route Matched route
+     */
     public function match(ServerRequestInterface $request): Route
     {
         /** @var string $uri Current request uri */
