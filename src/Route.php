@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Geekmusclay\Router;
 
+use Safe\Exceptions\PcreException;
+
 use function array_shift;
 use function call_user_func_array;
 use function count;
@@ -11,8 +13,8 @@ use function floatval;
 use function intval;
 use function is_array;
 use function is_numeric;
-use function preg_match;
 use function preg_replace_callback;
+use function Safe\preg_match;
 use function str_replace;
 use function trim;
 
@@ -21,22 +23,22 @@ class Route
     /** @var string $path Route path */
     private string $path;
 
-    /** @var array|callable $callable Route callback function */
+    /** @var string[]|callable $callable Route callback function */
     private $callable;
 
     /** @var string[] $matches Matches from preg match */
     private array $matches = [];
 
-    /** @var array $params Route parameters */
+    /** @var string[] $params Route parameters */
     private array $params = [];
 
     /** @var string|null $name Route name */
     private ?string $name;
 
     /**
-     * @param string         $path     Route path
-     * @param array|callable $callable Route callback function
-     *                                 or array to specify controller and function
+     * @param string            $path     Route path
+     * @param string[]|callable $callable Route callback function
+     *                                    or array to specify controller and function
      */
     public function __construct(string $path, $callable, ?string $name = null)
     {
@@ -48,7 +50,7 @@ class Route
     /**
      * Returns the url of the route with the given parameters
      *
-     * @param array $params Params to build url
+     * @param mixed[] $params Params to build url
      */
     public function path(array $params): string
     {
@@ -64,11 +66,15 @@ class Route
      * Checks if the route matches the url
      *
      * @param string $url Url to check
+     * @throws PcreException
      */
     public function match(string $url): bool
     {
-        $path  = trim($this->path, '/');
-        $path  = preg_replace_callback('#:([\w]+)#', [$this, 'paramMatch'], $path);
+        $path = trim($this->path, '/');
+        $path = preg_replace_callback('#:([\w]+)#', [$this, 'paramMatch'], $path);
+        if (null === $path) {
+            return false;
+        }
         $regex = "/^" . str_replace('/', '\/', $path) . "$/i";
 
         if (0 === preg_match($regex, $url, $this->matches)) {
@@ -82,7 +88,7 @@ class Route
     /**
      * Checks if a regex has already been defined for the given parameter
      *
-     * @param array $match List of regex
+     * @param string[] $match List of regex
      */
     private function paramMatch(array $match): string
     {
@@ -96,7 +102,7 @@ class Route
     /**
      * Defines a regex for a given url parameter
      *
-     * @param array $params Associative array of parameter and regex
+     * @param string[] $params Associative array of parameter and regex
      */
     public function with(array $params): self
     {
@@ -131,7 +137,8 @@ class Route
      * @todo find another way to cast params
      *
      * Cast numeric parameters
-     * @param array $params Parameters to cast
+     * @param string[] $params Parameters to cast
+     * @return mixed[] Casted array values
      */
     private function cast(array $params): array
     {
@@ -151,7 +158,7 @@ class Route
     /**
      * Return the route parameters
      *
-     * @return array
+     * @return string[]
      */
     public function getParameters(): array
     {
@@ -161,7 +168,8 @@ class Route
     /**
      * Get route matches after running the match function
      *
-     * @return array Matches foud in the url
+     * @return string[] Matches foud in the url
+     * @throws PcreException
      */
     public function getMatches(): array
     {
@@ -169,7 +177,7 @@ class Route
         foreach ($this->params as $param => $regex) {
             $regex = '(' . $regex . ')';
             foreach ($this->matches as $match) {
-                if (preg_match($regex, $match)) {
+                if (1 === preg_match($regex, $match)) {
                     $res[$param] = $match;
                 }
             }
@@ -182,7 +190,7 @@ class Route
      * Get route callable or the array that contain the controller
      * name and the function to execute in it.
      *
-     * @return callable|array
+     * @return callable|string[]
      */
     public function getCallback()
     {

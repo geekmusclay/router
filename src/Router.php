@@ -12,18 +12,18 @@ use function trim;
 
 class Router
 {
-    /** @var Route[] $routes Collection of router routes */
+    /** @var array<string, Route[]> $routes Collection of router routes */
     private array $routes = [];
 
-    /** @var Route[] $namesRoutes Collection of named routes */
+    /** @var Route[] $namedRoutes Collection of named routes */
     private array $namedRoutes = [];
 
     /**
      * Router GET function, create a route
      *
-     * @param string         $path     Path of the route
-     * @param array|callable $callable Callable to execute on route match
-     * @param string|null    $name     Name of the route
+     * @param string            $path     Path of the route
+     * @param string[]|callable $callable Callable to execute on route match
+     * @param string|null       $name     Name of the route
      */
     public function get(string $path, $callable, ?string $name = null): Route
     {
@@ -33,9 +33,9 @@ class Router
     /**
      * Router POST function, create a route
      *
-     * @param string         $path     Path of the route
-     * @param array|callable $callable Callable to execute on route match
-     * @param string|null    $name     Name of the route
+     * @param string            $path     Path of the route
+     * @param string[]|callable $callable Callable to execute on route match
+     * @param string|null       $name     Name of the route
      */
     public function post(string $path, $callable, ?string $name = null): Route
     {
@@ -45,9 +45,9 @@ class Router
     /**
      * Router PUT function, create a route
      *
-     * @param string         $path     Path of the route
-     * @param array|callable $callable Callable to execute on route match
-     * @param string|null    $name     Name of the route
+     * @param string            $path     Path of the route
+     * @param string[]|callable $callable Callable to execute on route match
+     * @param string|null       $name     Name of the route
      */
     public function put(string $path, $callable, ?string $name = null): Route
     {
@@ -57,9 +57,9 @@ class Router
     /**
      * Router PATCH function, create a route
      *
-     * @param string         $path     Path of the route
-     * @param array|callable $callable Callable to execute on route match
-     * @param string|null    $name     Name of the route
+     * @param string            $path     Path of the route
+     * @param string[]|callable $callable Callable to execute on route match
+     * @param string|null       $name     Name of the route
      */
     public function patch(string $path, $callable, ?string $name = null): Route
     {
@@ -69,9 +69,9 @@ class Router
     /**
      * Router DELETE function, create a route
      *
-     * @param string         $path     Path of the route
-     * @param array|callable $callable Callable to execute on route match
-     * @param string|null    $name     Name of the route
+     * @param string            $path     Path of the route
+     * @param string[]|callable $callable Callable to execute on route match
+     * @param string|null       $name     Name of the route
      */
     public function delete(string $path, $callable, ?string $name = null): Route
     {
@@ -81,9 +81,9 @@ class Router
     /**
      * Router POST function, create a route
      *
-     * @param string         $path     Path of the route
-     * @param array|callable $callable Callable to execute on route match
-     * @param string|null    $name     Name of the route
+     * @param string            $path     Path of the route
+     * @param string[]|callable $callable Callable to execute on route match
+     * @param string|null       $name     Name of the route
      */
     private function add(
         string $path,
@@ -104,8 +104,8 @@ class Router
     /**
      * Get route url by his name
      *
-     * @param string $name   The name of the route
-     * @param array  $params The params that are passed in the url
+     * @param string  $name   The name of the route
+     * @param mixed[] $params The params that are passed in the url
      */
     public function path(string $name, array $params = []): ?string
     {
@@ -120,8 +120,6 @@ class Router
      * Find route by his name
      *
      * @param string $name Name of the searched route
-     *
-     * @return Route|null
      */
     public function find(string $name): ?Route
     {
@@ -136,7 +134,6 @@ class Router
      * Look for the corresponding route of given request
      *
      * @param ServerRequestInterface $request Request to match
-     *
      * @return Route Matched route
      */
     public function match(ServerRequestInterface $request): Route
