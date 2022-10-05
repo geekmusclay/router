@@ -6,7 +6,8 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Geekmusclay\\Router\\": "src/"
+            "Geekmusclay\\Router\\": "src/",
+            "Tests\\": "tests/"
         }
     },
     "authors": [

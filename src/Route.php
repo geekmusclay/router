@@ -16,6 +16,8 @@ use function is_numeric;
 use function preg_replace_callback;
 use function Safe\preg_match;
 use function str_replace;
+use function strpos;
+use function substr;
 use function trim;
 
 class Route
@@ -178,7 +180,7 @@ class Route
             $regex = '(' . $regex . ')';
             foreach ($this->matches as $match) {
                 if (1 === preg_match($regex, $match)) {
-                    $res[$param] = $match;
+                    $res[ substr($param, 1) ] = $match;
                 }
             }
         }
@@ -190,10 +192,21 @@ class Route
      * Get route callable or the array that contain the controller
      * name and the function to execute in it.
      *
-     * @return callable|string[]
+     * @return callable
      */
-    public function getCallback()
+    public function getCallback(): callable
     {
+        if (
+            true === is_array($this->callable) &&
+            false === strpos($this->callable[0], '::') &&
+            2 === count($this->callable)
+        ) {
+            return [
+                new $this->callable[0](),
+                $this->callable[1],
+            ];
+        }
+
         return $this->callable;
     }
 
@@ -203,17 +216,5 @@ class Route
     public function getName(): ?string
     {
         return $this->name;
-    }
-
-    /**
-     * Set route name
-     *
-     * @param string $name The name of the route
-     */
-    public function setName(string $name): self
-    {
-        $this->name = $name;
-
-        return $this;
     }
 }

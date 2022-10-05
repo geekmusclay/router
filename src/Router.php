@@ -15,7 +15,7 @@ class Router
     /** @var array<string, Route[]> $routes Collection of router routes */
     private array $routes = [];
 
-    /** @var Route[] $namedRoutes Collection of named routes */
+    /** @var array<string, Route> $namedRoutes Collection of named routes */
     private array $namedRoutes = [];
 
     /**
@@ -85,16 +85,15 @@ class Router
      * @param string[]|callable $callable Callable to execute on route match
      * @param string|null       $name     Name of the route
      */
-    private function add(
+    public function add(
         string $path,
         $callable,
         string $method,
         ?string $name = null
     ): Route {
-        $route                   = new Route($path, $callable);
+        $route                   = new Route($path, $callable, $name);
         $this->routes[$method][] = $route;
         if (null !== $name) {
-            $route->setName($name);
             $this->namedRoutes[$name] = $route;
         }
 
@@ -134,9 +133,9 @@ class Router
      * Look for the corresponding route of given request
      *
      * @param ServerRequestInterface $request Request to match
-     * @return Route Matched route
+     * @return Route|null Matched route, or null if nor route match
      */
-    public function match(ServerRequestInterface $request): Route
+    public function match(ServerRequestInterface $request): ?Route
     {
         /** @var string $uri Current request uri */
         $uri = $request->getUri()->getPath();
@@ -154,7 +153,7 @@ class Router
             }
         }
 
-        throw new Exception('No matching routes');
+        return null;
     }
 
     /**

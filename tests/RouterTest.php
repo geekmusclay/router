@@ -1,8 +1,11 @@
 <?php 
 
+namespace Tests;
+
 use Geekmusclay\Router\Router;
 use GuzzleHttp\Psr7\ServerRequest;
 use PHPUnit\Framework\TestCase;
+use Tests\Fake\FakeController;
 
 class RouterTest extends TestCase
 {
@@ -24,10 +27,10 @@ class RouterTest extends TestCase
 
     public function testGetMethodIfUrlDoesNotExists()
     {
-        $this->expectException(Exception::class);
         $request = new ServerRequest('GET', '/blog');
         $this->router->get('/coucou', function () { return 'hello'; }, 'blog');
-        $this->router->match($request);
+        $route = $this->router->match($request);
+        $this->assertEquals(null, $route);
     }
 
     public function testGetMethodWithParameters()
@@ -68,5 +71,25 @@ class RouterTest extends TestCase
         $request = new ServerRequest('GET', '/hello');
         $this->assertEquals('hello', $route->getName());
         $this->assertEquals('hello', call_user_func_array($route->getCallback(), [$request]));
+    }
+
+    public function testNonStaticRoute()
+    {
+        $this->router->get('/fake', [FakeController::class, 'hello'], 'fake.hello');
+        $request = new ServerRequest('GET', '/fake');
+        $route = $this->router->match($request);
+        $callable = $route->getCallback();
+        $this->assertInstanceOf(FakeController::class, $callable[0]);
+        $this->assertEquals('hello', $callable[1]);
+        $this->assertEquals('Hello', $route->call());
+    }
+
+    public function testStaticRoute()
+    {
+        $this->router->get('/fake/static', FakeController::class . '::staticHello', 'fake.static.hello');
+        $request = new ServerRequest('GET', '/fake/static');
+        $route = $this->router->match($request);
+        $this->assertEquals(FakeController::class . '::staticHello', $route->getCallback());
+        $this->assertEquals('Hello', $route->call());
     }
 }
