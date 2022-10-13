@@ -180,7 +180,7 @@ class Route
             $regex = '(' . $regex . ')';
             foreach ($this->matches as $match) {
                 if (1 === preg_match($regex, $match)) {
-                    $res[ substr($param, 1) ] = $match;
+                    $res[ $param ] = $match;
                 }
             }
         }
