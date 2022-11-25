@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Geekmusclay\Router;
+namespace Geekmusclay\Router\Core;
 
+use Geekmusclay\Router\Interfaces\RouteInterface;
 use Safe\Exceptions\PcreException;
 
 use function array_shift;
@@ -17,10 +18,9 @@ use function preg_replace_callback;
 use function Safe\preg_match;
 use function str_replace;
 use function strpos;
-use function substr;
 use function trim;
 
-class Route
+class Route implements RouteInterface
 {
     /** @var string $path Route path */
     private string $path;
@@ -191,8 +191,6 @@ class Route
     /**
      * Get route callable or the array that contain the controller
      * name and the function to execute in it.
-     *
-     * @return callable
      */
     public function getCallback(): callable
     {

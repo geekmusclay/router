@@ -2,15 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Geekmusclay\Router;
+namespace Geekmusclay\Router\Core;
 
 use Exception;
-use Geekmusclay\Router\Route;
+use Geekmusclay\Router\Core\Route;
+use Geekmusclay\Router\Interfaces\RouterInterface;
+use Geekmusclay\Router\Proxies\RouterProxy;
 use Psr\Http\Message\ServerRequestInterface;
 
 use function trim;
 
-class Router
+class Router implements RouterInterface
 {
     /** @var array<string, Route[]> $routes Collection of router routes */
     private array $routes = [];
@@ -101,6 +103,18 @@ class Router
     }
 
     /**
+     * Will allow routes to be declared in a group, using a suffix
+     *
+     * @param  string   $suffix   Group suffix
+     * @param  callable $callable Callable to execute (contains routes declaration)
+     * @return mixed
+     */
+    public function group(string $suffix, callable $callable)
+    {
+        return $callable(new RouterProxy($suffix, $this));
+    }
+
+    /**
      * Get route url by his name
      *
      * @param string  $name   The name of the route
@@ -154,6 +168,15 @@ class Router
         }
 
         return null;
+    }
+
+    /**
+     * Allow to flush router routes and named routes
+     */
+    public function flush(): void
+    {
+        $this->routes      = [];
+        $this->namedRoutes = [];
     }
 
     /**
