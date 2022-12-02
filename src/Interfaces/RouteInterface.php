@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Geekmusclay\Router\Interfaces;
 
+use Psr\Http\Message\ServerRequestInterface;
+
 interface RouteInterface
 {
     /**
@@ -19,7 +21,7 @@ interface RouteInterface
      *
      * @return mixed The return is almost whatever is inside callable
      */
-    public function call();
+    public function call(ServerRequestInterface $request);
 
     /**
      * Defines a regex for a given url parameter

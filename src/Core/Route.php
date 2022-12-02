@@ -4,21 +4,24 @@ declare(strict_types=1);
 
 namespace Geekmusclay\Router\Core;
 
-use Geekmusclay\Router\Interfaces\RouteInterface;
-use Safe\Exceptions\PcreException;
-
-use function array_shift;
-use function call_user_func_array;
-use function count;
-use function floatval;
-use function intval;
-use function is_array;
-use function is_numeric;
-use function preg_replace_callback;
-use function Safe\preg_match;
-use function str_replace;
-use function strpos;
 use function trim;
+use function count;
+use function strpos;
+use ReflectionMethod;
+use function is_array;
+
+use function is_numeric;
+use function array_shift;
+use function str_replace;
+use function Safe\preg_match;
+use function call_user_func_array;
+use Safe\Exceptions\PcreException;
+use function preg_replace_callback;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Geekmusclay\Router\Interfaces\RouteInterface;
+use Psr\Http\Message\ResponseInterface as Response;
 
 class Route implements RouteInterface
 {
@@ -116,19 +119,61 @@ class Route implements RouteInterface
     }
 
     /**
+     * Function used to inject parameters when calling a function
+     *
+     * @param ServerRequestInterface $request The current request
+     *
+     * @return array<mixed>
+     */
+    private function getToPass(ServerRequestInterface $request): array
+    {
+        if (false === isset($this->callable[0]) || false === isset($this->callable[1])) {
+            return [];
+        }
+        $reflector = new ReflectionMethod($this->callable[0], $this->callable[1]);
+        $matches   = $this->getMatches();
+        $params    = $reflector->getParameters();
+
+        $toPass = [];
+        foreach ($params as $param) {
+            $type = $param->getType();
+            if (null === $type) {
+                continue;
+            }
+            $type = $type->getName();
+            $name = $param->getName();
+
+            if (
+                ServerRequestInterface::class === $type ||
+                RequestInterface::class === $type
+            ) {
+                $toPass[] = $request;
+            } else if (ResponseInterface::class === $type) {
+                $toPass[] = new Response();
+            } else {
+                $toPass[] = $matches[$name];
+            }
+        }
+
+        return $toPass;
+    }
+
+    /**
      * Executes the route callable
      *
      * @return mixed The return is almost whatever is inside callable
      */
-    public function call()
+    public function call(ServerRequestInterface $request)
     {
         if (true === is_array($this->callable) && 2 === count($this->callable)) {
+            $toPass = $this->getToPass($request);
+
             return call_user_func_array(
                 [
                     new $this->callable[0](),
                     $this->callable[1],
                 ],
-                $this->cast($this->matches)
+                $this->cast($toPass)
             );
         }
 
@@ -144,12 +189,14 @@ class Route implements RouteInterface
      */
     private function cast(array $params): array
     {
-        for ($i = 0; $i < count($params); $i++) {
-            if (true === is_numeric($params[$i])) {
-                if (((float) $params[$i] - (int) $params[$i]) > 0) {
-                    $params[$i] = floatval($params[$i]);
+        foreach ($params as &$param) {
+            if (true === is_numeric($param)) {
+                $float = (float) $param;
+                $int   = (int) $param;
+                if (($float - $int) > 0) {
+                    $param = $float;
                 } else {
-                    $params[$i] = intval($params[$i]);
+                    $param = $int;
                 }
             }
         }

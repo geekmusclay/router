@@ -188,6 +188,6 @@ class Router implements RouterInterface
      */
     public function run(ServerRequestInterface $request)
     {
-        return $this->match($request)->call();
+        return $this->match($request)->call($request);
     }
 }
