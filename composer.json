@@ -1,7 +1,7 @@
 {
     "name": "geekmusclay/router",
     "description": "A simple router, for learning and fun",
-    "version": "0.1.2",
+    "version": "0.2.0",
     "type": "library",
     "license": "MIT",
     "autoload": {
