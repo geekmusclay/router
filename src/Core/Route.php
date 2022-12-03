@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Geekmusclay\Router\Core;
 
+use Throwable;
 use function trim;
 use function count;
 use function strpos;
 use ReflectionMethod;
-use function is_array;
 
+use function is_array;
 use function is_numeric;
 use function array_shift;
 use function str_replace;
@@ -17,11 +18,12 @@ use function Safe\preg_match;
 use function call_user_func_array;
 use Safe\Exceptions\PcreException;
 use function preg_replace_callback;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Geekmusclay\Router\Interfaces\RouteInterface;
-use Psr\Http\Message\ResponseInterface as Response;
+use GuzzleHttp\Psr7\Response;
 
 class Route implements RouteInterface
 {
@@ -163,14 +165,20 @@ class Route implements RouteInterface
      *
      * @return mixed The return is almost whatever is inside callable
      */
-    public function call(ServerRequestInterface $request)
+    public function call(ServerRequestInterface $request, ?ContainerInterface $container = null)
     {
         if (true === is_array($this->callable) && 2 === count($this->callable)) {
             $toPass = $this->getToPass($request);
 
+            if (null !== $container) {
+                $callable = $container->get($this->callable[0]);
+            } else {
+                $callable = new $this->callable[0]();
+            }
+
             return call_user_func_array(
                 [
-                    new $this->callable[0](),
+                    $callable,
                     $this->callable[1],
                 ],
                 $this->cast($toPass)

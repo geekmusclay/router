@@ -12,6 +12,7 @@ composer.lock
 .phpcs-cache
 
 # Dev Local
+public/
 index.php
 
 # PHPUnit

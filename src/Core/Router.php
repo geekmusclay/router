@@ -8,6 +8,7 @@ use Exception;
 use Geekmusclay\Router\Core\Route;
 use Geekmusclay\Router\Interfaces\RouterInterface;
 use Geekmusclay\Router\Proxies\RouterProxy;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 use function trim;
@@ -19,6 +20,19 @@ class Router implements RouterInterface
 
     /** @var array<string, Route> $namedRoutes Collection of named routes */
     private array $namedRoutes = [];
+
+    /** @var ContainerInterface $container Dependency injection container */
+    private ?ContainerInterface $container = null;
+
+    /**
+     * Router constructor function.
+     *
+     * @param ContainerInterface|null $container Dependency injection container
+     */
+    public function __construct(ContainerInterface $container = null)
+    {
+        $this->container = $container;
+    }
 
     /**
      * Router GET function, create a route
@@ -188,6 +202,28 @@ class Router implements RouterInterface
      */
     public function run(ServerRequestInterface $request)
     {
-        return $this->match($request)->call($request);
+        return $this->match($request)->call($request, $this->container);
+    }
+
+    /**
+     * Router getContainer function.
+     *
+     * @return ContainerInterface|null Dependency injection container
+     */
+    public function getContainer(): ?ContainerInterface
+    {
+        return $this->container;
+    }
+
+    /**
+     * Router setContainer function.
+     *
+     * @param ContainerInterface|null Dependency injection container
+     */
+    public function setContainer(ContainerInterface $container): self
+    {
+        $this->container = $container;
+
+        return $this;
     }
 }
