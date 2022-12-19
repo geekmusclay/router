@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Geekmusclay\Router\Interfaces;
 
+use Psr\Http\Message\ServerRequestInterface;
+use Geekmusclay\Router\Interfaces\RouteInterface;
+
 interface RouterInterface
 {
     /**
@@ -59,4 +62,20 @@ interface RouterInterface
      * @return mixed
      */
     public function group(string $suffix, callable $callable);
+
+    /**
+     * Look for the corresponding route of given request
+     *
+     * @param ServerRequestInterface $request Request to match
+     */
+    public function match(ServerRequestInterface $request): ?RouteInterface;
+
+    /**
+     * Function to launch the router, it will look for the
+     * corresponding route and then launch the callback.
+     *
+     * @return mixed
+     * @throws Exception
+     */
+    public function run(ServerRequestInterface $request);
 }

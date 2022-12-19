@@ -29,4 +29,24 @@ interface RouteInterface
      * @param string[] $params Associative array of parameter and regex
      */
     public function with(array $params): self;
+
+    /**
+     * Return the route parameters
+     *
+     * @return string[] The route parameters
+     */
+    public function getParameters(): array;
+
+    /**
+     * Get route matches after running the match function
+     *
+     * @return string[] Matches foud in the url
+     */
+    public function getMatches(): array;
+
+    /**
+     * Get route callable or the array that contain the controller
+     * name and the function to execute in it.
+     */
+    public function getCallback(): callable;
 }
