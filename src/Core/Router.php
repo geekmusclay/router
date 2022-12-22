@@ -133,8 +133,9 @@ class Router implements RouterInterface
      *
      * @param string  $name   The name of the route
      * @param mixed[] $params The params that are passed in the url
+     * @throws Exception Throw exception when route does not exist
      */
-    public function path(string $name, array $params = []): ?string
+    public function path(string $name, array $params = []): string
     {
         if (false === isset($this->namedRoutes[$name])) {
             throw new Exception('Named route not found');

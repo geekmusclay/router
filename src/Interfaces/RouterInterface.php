@@ -71,6 +71,15 @@ interface RouterInterface
     public function match(ServerRequestInterface $request): ?RouteInterface;
 
     /**
+     * Get route url by his name
+     *
+     * @param string  $name   The name of the route
+     * @param mixed[] $params The params that are passed in the url
+     * @throws Exception Throw exception when route does not exist
+     */
+    public function path(string $name, array $params = []): string;
+
+    /**
      * Function to launch the router, it will look for the
      * corresponding route and then launch the callback.
      *
