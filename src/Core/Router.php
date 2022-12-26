@@ -6,6 +6,7 @@ namespace Geekmusclay\Router\Core;
 
 use Exception;
 use Geekmusclay\Router\Core\Route;
+use Geekmusclay\Router\Interfaces\RouteInterface;
 use Geekmusclay\Router\Interfaces\RouterInterface;
 use Geekmusclay\Router\Proxies\RouterProxy;
 use Psr\Container\ContainerInterface;
@@ -164,7 +165,7 @@ class Router implements RouterInterface
      * @param ServerRequestInterface $request Request to match
      * @return Route|null Matched route, or null if nor route match
      */
-    public function match(ServerRequestInterface $request): ?Route
+    public function match(ServerRequestInterface $request): ?RouteInterface
     {
         /** @var string $uri Current request uri */
         $uri = $request->getUri()->getPath();
@@ -203,7 +204,12 @@ class Router implements RouterInterface
      */
     public function run(ServerRequestInterface $request)
     {
-        return $this->match($request)->call($request, $this->container);
+        $route = $this->match($request);
+        if (null === $route) {
+            throw new Exception('No route found');
+        }
+
+        return $route->call($request, $this->container);
     }
 
     /**

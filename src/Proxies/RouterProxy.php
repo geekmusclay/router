@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Geekmusclay\Router\Proxies;
 
 use Geekmusclay\Router\Core\Router;
+use Psr\Http\Message\ServerRequestInterface;
 use Geekmusclay\Router\Interfaces\RouteInterface;
 use Geekmusclay\Router\Interfaces\RouterInterface;
 
@@ -102,5 +103,39 @@ class RouterProxy implements RouterInterface
         $suffix = $this->suffix . $suffix;
 
         return $callable(new RouterProxy($suffix, $this->router));
+    }
+
+    /**
+     * Look for the corresponding route of given request
+     *
+     * @param ServerRequestInterface $request Request to match
+     */
+    public function match(ServerRequestInterface $request): ?RouteInterface
+    {
+        return $this->router->match($request);
+    }
+
+    /**
+     * Get route url by his name
+     *
+     * @param string  $name   The name of the route
+     * @param mixed[] $params The params that are passed in the url
+     * @throws Exception Throw exception when route does not exist
+     */
+    public function path(string $name, array $params = []): string
+    {
+        return $this->router->path($name, $params);
+    }
+
+    /**
+     * Function to launch the router, it will look for the
+     * corresponding route and then launch the callback.
+     *
+     * @return mixed
+     * @throws Exception
+     */
+    public function run(ServerRequestInterface $request)
+    {
+        return $this->router->run($request);
     }
 }
