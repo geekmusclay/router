@@ -8,6 +8,12 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 #[Route(path: '/prefixed')]
 class FakeAttributeController
 {
+    #[Route(path: '/', name: 'fake.index')]
+    public function index()
+    {
+        return 'Index';
+    }
+
     #[Route(path: '/hello', name: 'fake.hello')]
     public function hello()
     {
@@ -20,12 +26,12 @@ class FakeAttributeController
         return 'Hello';
     }
 
-    #[Route(path: '/:id-:slug', name: 'fake.index', with: [
+    #[Route(path: '/:id-:slug', name: 'fake.complex', with: [
         'id' => '[0-9]+',
         'slug' => '[a-z\-]+'
     ])]
-    public function index(Request $request, int $id, string $slug)
+    public function complex(Request $request, int $id, string $slug)
     {
-        echo 'Method: ' . $request->getMethod() . ', Id: ' . $id . ', Slug: ' . $slug;
+        return 'Method: ' . $request->getMethod() . ', Id: ' . $id . ', Slug: ' . $slug;
     }
 }
