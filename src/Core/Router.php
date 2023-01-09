@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Geekmusclay\Router\Core;
 
 use Exception;
+use Geekmusclay\Router\Attribute\Route as AttributeRoute;
 use Geekmusclay\Router\Core\Route;
 use Geekmusclay\Router\Interfaces\RouteInterface;
 use Geekmusclay\Router\Interfaces\RouterInterface;
 use Geekmusclay\Router\Proxies\RouterProxy;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use ReflectionClass;
 
 use function trim;
 
@@ -157,6 +159,48 @@ class Router implements RouterInterface
         }
 
         return $this->namedRoutes[$name];
+    }
+
+    /**
+     * Registers a class / controller containing routes declared
+     * using the "Route" attribute
+     *
+     * @param string $class The class to register
+     */
+    public function register(string $class): bool
+    {
+        $reflection = new ReflectionClass($class);
+
+        $prefix = null;
+        $attributes = $reflection->getAttributes(AttributeRoute::class);
+        if (true === isset($attributes[0])) {
+            $attribute = $attributes[0]->newInstance();
+            $prefix = $attribute->getPath();
+        }
+
+        $methods = $reflection->getMethods();
+        foreach ($methods as $method) {
+            $attributes = $method->getAttributes(AttributeRoute::class);
+            if (0 === count($attributes)) {
+                continue;
+            }
+            $attribute = $attributes[0]->newInstance();
+            $path = $prefix . $attribute->getPath();
+
+            $route = $this->add(
+                $path,
+                [$class, $method->getName()],
+                $attribute->getMethod(),
+                $attribute->getName()
+            );
+
+            $with = $attribute->getWith();
+            if (count($with) > 0) {
+                $route->with($with);
+            }
+        }
+
+        return true;
     }
 
     /**
