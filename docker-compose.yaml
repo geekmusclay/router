@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  app:
+    image: thecodingmachine/php:8.2-v4-slim-apache
+    volumes: 
+      - .:/var/www/html
+      - ../di-container:/var/www/di-container
+    ports:
+      - 8888:80
+    environment:
+      APACHE_DOCUMENT_ROOT: public/
+      PHP_EXTENSION_XDEBUG: 0
