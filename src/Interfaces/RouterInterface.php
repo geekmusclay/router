@@ -80,6 +80,14 @@ interface RouterInterface
     public function path(string $name, array $params = []): string;
 
     /**
+     * Registers a class / controller containing routes declared
+     * using the "Route" attribute
+     *
+     * @param string $class The class to register
+     */
+    public function register(string $class): bool;
+
+    /**
      * Function to launch the router, it will look for the
      * corresponding route and then launch the callback.
      *
