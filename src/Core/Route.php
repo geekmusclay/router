@@ -63,7 +63,7 @@ class Route implements RouteInterface
     {
         $url = $this->path;
         foreach ($params as $param => $value) {
-            $url = str_replace(':' . $param, $value, $url);
+            $url = str_replace(':' . (string) $param, (string) $value, $url);
         }
 
         return $url;
