@@ -19,7 +19,8 @@
     "require": {
         "php": "^8.0",
         "guzzlehttp/psr7": "^2.4",
-        "geekmusclay/di-container": "^0.1.0"
+        "geekmusclay/di-container": "^0.1",
+        "thecodingmachine/safe": "^1.3"
     },
     "require-dev": {
         "laminas/laminas-coding-standard": "^2.4",
