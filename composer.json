@@ -39,5 +39,10 @@
             "type": "path",
             "url": "../di-container"
         }
-    ]
+    ],
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
 }
