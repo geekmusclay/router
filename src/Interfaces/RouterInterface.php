@@ -85,7 +85,7 @@ interface RouterInterface
      *
      * @param string $class The class to register
      */
-    public function register(string $class): bool;
+    public function register(string $class): void;
 
     /**
      * Function to launch the router, it will look for the

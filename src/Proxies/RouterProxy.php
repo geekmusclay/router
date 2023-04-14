@@ -128,6 +128,17 @@ class RouterProxy implements RouterInterface
     }
 
     /**
+     * Registers a class / controller containing routes declared
+     * using the "Route" attribute
+     *
+     * @param string $class The class to register
+     */
+    public function register(string $class): void
+    {
+        $this->router->register($class);
+    }
+
+    /**
      * Function to launch the router, it will look for the
      * corresponding route and then launch the callback.
      *
