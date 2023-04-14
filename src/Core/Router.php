@@ -167,7 +167,7 @@ class Router implements RouterInterface
      *
      * @param string $class The class to register
      */
-    public function register(string $class): bool
+    public function register(string $class): void
     {
         $reflection = new ReflectionClass($class);
 
@@ -199,8 +199,44 @@ class Router implements RouterInterface
                 $route->with($with);
             }
         }
+    }
 
-        return true;
+    /**
+     * Starts the "register" function on all files that will be found in the given folder,
+     * as well as in all subfolders.
+     *
+     * @param  string $path      The path to the root directory
+     * @param  string $namespace The root namespace
+     * @return array             Return an array of result for the needs of the recursive feature
+     */
+    public function registerDir(string $path, string $namespace): array
+    {
+        $res = [];
+
+        $files = scandir($path);
+        foreach ($files as $file) {
+            if ('.' === $file || '..' === $file) {
+                continue;
+            }
+
+            $filePath = $path . DIRECTORY_SEPARATOR . $file;
+            if (true === is_dir($filePath)) {
+                $subs = $this->registerDir($filePath, $namespace . '\\' . $file);
+                foreach ($subs as $sub) {
+                    $res[] = $sub;
+                }
+            } else {
+                // Stock file name without extension
+                $parts = explode('.', $file);
+                $res[] = $namespace . '\\' . $parts[0];
+            }
+        }
+
+        foreach ($res as $class) {
+            $this->register($class);
+        }
+
+        return $res;
     }
 
     /**
