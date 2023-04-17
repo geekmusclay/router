@@ -162,6 +162,22 @@ class Router implements RouterInterface
     }
 
     /**
+     * Redirect to given route name function.
+     *
+     * @param ServerRequestInterface $request the server request
+     * @param string                 $name    The name of the route to execute
+     */
+    public function redirect(ServerRequestInterface $request, string $name): mixed
+    {
+        if (false === isset($this->namedRoutes[$name])) {
+            throw new Exception('Named route not found');
+        }
+        $route = $this->namedRoutes[$name];
+
+        return $route->call($request, $this->container);
+    }
+
+    /**
      * Registers a class / controller containing routes declared
      * using the "Route" attribute
      *
@@ -282,7 +298,7 @@ class Router implements RouterInterface
      * @return mixed
      * @throws Exception
      */
-    public function run(ServerRequestInterface $request)
+    public function run(ServerRequestInterface $request): mixed
     {
         $route = $this->match($request);
         if (null === $route) {

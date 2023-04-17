@@ -98,6 +98,14 @@ interface RouterInterface
     public function registerDir(string $path, string $namespace): array;
 
     /**
+     * Redirect to given route name function.
+     *
+     * @param ServerRequestInterface $request the server request
+     * @param string                 $name    The name of the route to execute
+     */
+    public function redirect(ServerRequestInterface $request, string $name): mixed;
+
+    /**
      * Function to launch the router, it will look for the
      * corresponding route and then launch the callback.
      *
