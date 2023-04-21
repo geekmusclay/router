@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Geekmusclay\Router\Proxies;
 
 use Geekmusclay\Router\Core\Router;
-use Psr\Http\Message\ServerRequestInterface;
 use Geekmusclay\Router\Interfaces\RouteInterface;
 use Geekmusclay\Router\Interfaces\RouterInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 class RouterProxy implements RouterInterface
 {
@@ -120,7 +120,7 @@ class RouterProxy implements RouterInterface
      *
      * @param string  $name   The name of the route
      * @param mixed[] $params The params that are passed in the url
-     * @throws Exception Throw exception when route does not exist
+     * @throws Exception
      */
     public function path(string $name, array $params = []): string
     {
@@ -149,6 +149,17 @@ class RouterProxy implements RouterInterface
     public function registerDir(string $path, string $namespace): array
     {
         return $this->router->registerDir($path, $namespace);
+    }
+
+    /**
+     * Redirect to given route name function.
+     *
+     * @param ServerRequestInterface $request the server request
+     * @param string                 $name    The name of the route to execute
+     */
+    public function redirect(ServerRequestInterface $request, string $name): mixed
+    {
+        return $this->router->redirect($request, $name);
     }
 
     /**

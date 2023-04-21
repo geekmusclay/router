@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Geekmusclay\Router\Interfaces;
 
-use Psr\Http\Message\ServerRequestInterface;
 use Geekmusclay\Router\Interfaces\RouteInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 interface RouterInterface
 {
@@ -75,7 +75,7 @@ interface RouterInterface
      *
      * @param string  $name   The name of the route
      * @param mixed[] $params The params that are passed in the url
-     * @throws Exception Throw exception when route does not exist
+     * @throws Exception
      */
     public function path(string $name, array $params = []): string;
 

@@ -14,7 +14,13 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionClass;
 
+use function count;
+use function explode;
+use function is_dir;
+use function scandir;
 use function trim;
+
+use const DIRECTORY_SEPARATOR;
 
 class Router implements RouterInterface
 {
@@ -32,7 +38,7 @@ class Router implements RouterInterface
      *
      * @param ContainerInterface|null $container Dependency injection container
      */
-    public function __construct(ContainerInterface $container = null)
+    public function __construct(?ContainerInterface $container = null)
     {
         $this->container = $container;
     }
@@ -136,7 +142,7 @@ class Router implements RouterInterface
      *
      * @param string  $name   The name of the route
      * @param mixed[] $params The params that are passed in the url
-     * @throws Exception Throw exception when route does not exist
+     * @throws Exception
      */
     public function path(string $name, array $params = []): string
     {
@@ -187,11 +193,11 @@ class Router implements RouterInterface
     {
         $reflection = new ReflectionClass($class);
 
-        $prefix = null;
+        $prefix     = null;
         $attributes = $reflection->getAttributes(AttributeRoute::class);
         if (true === isset($attributes[0])) {
             $attribute = $attributes[0]->newInstance();
-            $prefix = $attribute->getPath();
+            $prefix    = $attribute->getPath();
         }
 
         $methods = $reflection->getMethods();
@@ -201,7 +207,7 @@ class Router implements RouterInterface
                 continue;
             }
             $attribute = $attributes[0]->newInstance();
-            $path = $prefix . $attribute->getPath();
+            $path      = $prefix . $attribute->getPath();
 
             $route = $this->add(
                 $path,
@@ -295,7 +301,6 @@ class Router implements RouterInterface
      * Function to launch the router, it will look for the
      * corresponding route and then launch the callback.
      *
-     * @return mixed
      * @throws Exception
      */
     public function run(ServerRequestInterface $request): mixed
@@ -321,7 +326,7 @@ class Router implements RouterInterface
     /**
      * Router setContainer function.
      *
-     * @param ContainerInterface|null Dependency injection container
+     * @param ContainerInterface|null $container Dependency injection container
      */
     public function setContainer(ContainerInterface $container): self
     {

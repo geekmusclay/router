@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 declare(strict_types=1);
 
@@ -11,11 +11,8 @@ class JsonResponse extends Response
     /**
      * JsonResponse Constructor
      *
-     * @param integer     $status
      * @param array       $headers
      * @param array|null  $body
-     * @param string      $version
-     * @param string|null $reason
      */
     public function __construct(
         int $status = 200,

@@ -4,26 +4,25 @@ declare(strict_types=1);
 
 namespace Geekmusclay\Router\Core;
 
-use Throwable;
-use function trim;
-use function count;
-use function strpos;
-use ReflectionMethod;
-
-use function is_array;
-use function is_numeric;
-use function array_shift;
-use function str_replace;
-use function Safe\preg_match;
-use function call_user_func_array;
-use Safe\Exceptions\PcreException;
-use function preg_replace_callback;
+use Geekmusclay\Router\Interfaces\RouteInterface;
+use GuzzleHttp\Psr7\Response;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Geekmusclay\Router\Interfaces\RouteInterface;
-use GuzzleHttp\Psr7\Response;
+use ReflectionMethod;
+use Safe\Exceptions\PcreException;
+
+use function array_shift;
+use function call_user_func_array;
+use function count;
+use function is_array;
+use function is_numeric;
+use function preg_replace_callback;
+use function Safe\preg_match;
+use function str_replace;
+use function strpos;
+use function trim;
 
 class Route implements RouteInterface
 {
@@ -124,7 +123,6 @@ class Route implements RouteInterface
      * Function used to inject parameters when calling a function
      *
      * @param ServerRequestInterface $request The current request
-     *
      * @return array<mixed>
      */
     private function getToPass(ServerRequestInterface $request): array

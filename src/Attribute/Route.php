@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 declare(strict_types=1);
 
@@ -34,15 +34,15 @@ class Route
         ?string $name = null,
         ?array $with = []
     ) {
-        $this->path = $path;
+        $this->path   = $path;
         $this->method = $method;
-        $this->name = $name;
-        $this->with = $with;
+        $this->name   = $name;
+        $this->with   = $with;
     }
 
     /**
      * Get the value of path
-     */ 
+     */
     public function getPath(): string
     {
         return $this->path;
@@ -50,9 +50,9 @@ class Route
 
     /**
      * Set the value of path
-     * 
+     *
      * @param string $path The route path
-     */ 
+     */
     public function setPath(string $path): self
     {
         $this->path = $path;
@@ -62,7 +62,7 @@ class Route
 
     /**
      * Get the value of name
-     */ 
+     */
     public function getName(): ?string
     {
         return $this->name;
@@ -72,7 +72,7 @@ class Route
      * Set the value of name
      *
      * @param string $name The name of the route
-     */ 
+     */
     public function setName(?string $name): self
     {
         $this->name = $name;
@@ -82,7 +82,7 @@ class Route
 
     /**
      * Get the value of method
-     */ 
+     */
     public function getMethod(): string
     {
         return $this->method;
@@ -92,7 +92,7 @@ class Route
      * Set the value of method
      *
      * @param string $method The route HTTP method
-     */ 
+     */
     public function setMethod(string $method): self
     {
         $this->method = $method;
@@ -102,7 +102,7 @@ class Route
 
     /**
      * Get the value of with
-     */ 
+     */
     public function getWith(): array
     {
         return $this->with;
@@ -112,7 +112,7 @@ class Route
      * Set the value of with
      *
      * @param array $with The specifications for route params
-     */ 
+     */
     public function setWith(array $with): self
     {
         $this->with = $with;
