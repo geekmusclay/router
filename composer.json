@@ -35,12 +35,6 @@
         "cs-check": "vendor\\bin\\phpcs",
         "cs-fix": "vendor\\bin\\phpcbf"
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../di-container"
-        }
-    ],
     "config": {
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true
