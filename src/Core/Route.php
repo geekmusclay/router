@@ -4,25 +4,28 @@ declare(strict_types=1);
 
 namespace Geekmusclay\Router\Core;
 
-use Geekmusclay\Router\Interfaces\RouteInterface;
+use function trim;
+use function count;
+use function strpos;
+
+use Exception;
+use ReflectionMethod;
+use function is_array;
+use function is_numeric;
+use function array_shift;
+use function str_replace;
+
+use function Safe\preg_match;
 use GuzzleHttp\Psr7\Response;
+use function call_user_func_array;
+use Safe\Exceptions\PcreException;
+use function preg_replace_callback;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use ReflectionMethod;
-use Safe\Exceptions\PcreException;
-
-use function array_shift;
-use function call_user_func_array;
-use function count;
-use function is_array;
-use function is_numeric;
-use function preg_replace_callback;
-use function Safe\preg_match;
-use function str_replace;
-use function strpos;
-use function trim;
+use Geekmusclay\Router\Interfaces\RouteInterface;
+use Geekmusclay\Router\Interfaces\ServerMiddlewareInterface;
 
 class Route implements RouteInterface
 {
@@ -40,6 +43,9 @@ class Route implements RouteInterface
 
     /** @var string|null $name Route name */
     private ?string $name;
+
+    /** @var ServerMiddlewareInterface[] $middlewares Contain the route middlewares */
+    private array $middlewares = [];
 
     /**
      * @param string            $path     Route path
@@ -125,7 +131,7 @@ class Route implements RouteInterface
      * @param ServerRequestInterface $request The current request
      * @return array<mixed>
      */
-    private function getToPass(ServerRequestInterface $request): array
+    private function getToPass(ServerRequestInterface $request, ResponseInterface $response): array
     {
         if (false === isset($this->callable[0]) || false === isset($this->callable[1])) {
             return [];
@@ -149,7 +155,7 @@ class Route implements RouteInterface
             ) {
                 $toPass[] = $request;
             } else if (ResponseInterface::class === $type) {
-                $toPass[] = new Response();
+                $toPass[] = $response;
             } else {
                 $toPass[] = $matches[$name];
             }
@@ -165,8 +171,17 @@ class Route implements RouteInterface
      */
     public function call(ServerRequestInterface $request, ?ContainerInterface $container = null)
     {
+        $response = new Response();
+        for ($i = 0; $i < count($this->middlewares); $i++) {
+            $middleware = new $this->middlewares[$i];
+            $res = $middleware($request, $response);
+            if (false === $res) {
+                throw new Exception('Middleware failed');
+            }
+        }
+
         if (true === is_array($this->callable) && 2 === count($this->callable)) {
-            $toPass = $this->getToPass($request);
+            $toPass = $this->getToPass($request, $response);
 
             if (null !== $container) {
                 $callable = $container->get($this->callable[0]);
@@ -267,5 +282,15 @@ class Route implements RouteInterface
     public function getName(): ?string
     {
         return $this->name;
+    }
+
+    /**
+     * Add middlewares to route
+     *
+     * @param array $middlewares The middlewares to add
+     */
+    public function withMiddleware(array $middlewares)
+    {
+        $this->middlewares = $middlewares;
     }
 }
