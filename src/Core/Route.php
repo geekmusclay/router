@@ -4,28 +4,27 @@ declare(strict_types=1);
 
 namespace Geekmusclay\Router\Core;
 
-use function trim;
-use function count;
-use function strpos;
-
 use Exception;
-use ReflectionMethod;
-use function is_array;
-use function is_numeric;
-use function array_shift;
-use function str_replace;
-
-use function Safe\preg_match;
+use Geekmusclay\Router\Interfaces\RouteInterface;
+use Geekmusclay\Router\Interfaces\ServerMiddlewareInterface;
 use GuzzleHttp\Psr7\Response;
-use function call_user_func_array;
-use Safe\Exceptions\PcreException;
-use function preg_replace_callback;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Geekmusclay\Router\Interfaces\RouteInterface;
-use Geekmusclay\Router\Interfaces\ServerMiddlewareInterface;
+use ReflectionMethod;
+use Safe\Exceptions\PcreException;
+
+use function array_shift;
+use function call_user_func_array;
+use function count;
+use function is_array;
+use function is_numeric;
+use function preg_replace_callback;
+use function Safe\preg_match;
+use function str_replace;
+use function strpos;
+use function trim;
 
 class Route implements RouteInterface
 {
@@ -46,6 +45,8 @@ class Route implements RouteInterface
 
     /** @var ServerMiddlewareInterface[] $middlewares Contain the route middlewares */
     private array $middlewares = [];
+
+    private int $index = 0;
 
     /**
      * @param string            $path     Route path
@@ -126,8 +127,8 @@ class Route implements RouteInterface
     }
 
     /**
+     * @todo replace this with DI Container
      * Function used to inject parameters when calling a function
-     *
      * @param ServerRequestInterface $request The current request
      * @return array<mixed>
      */
@@ -171,15 +172,14 @@ class Route implements RouteInterface
      */
     public function call(ServerRequestInterface $request, ?ContainerInterface $container = null)
     {
-        $response = new Response();
-        for ($i = 0; $i < count($this->middlewares); $i++) {
-            $middleware = new $this->middlewares[$i];
-            $res = $middleware($request, $response);
+        if (count($this->middlewares) > 0) {
+            $res = $this->processMiddlewares($request);
             if (false === $res) {
                 throw new Exception('Middleware failed');
             }
         }
 
+        $response = new Response();
         if (true === is_array($this->callable) && 2 === count($this->callable)) {
             $toPass = $this->getToPass($request, $response);
 
@@ -291,6 +291,44 @@ class Route implements RouteInterface
      */
     public function withMiddleware(array $middlewares)
     {
-        $this->middlewares = $middlewares;
+        $res = [];
+        foreach ($middlewares as $middleware) {
+            $res[] = new $middleware();
+        }
+
+        $this->middlewares = $res;
+    }
+
+    /**
+     * Used to preccess route Middlewares.
+     *
+     * @param ServerRequestInterface $request The current request
+     * @return mixed Depend on middlewares way to work
+     */
+    public function processMiddlewares(ServerRequestInterface $request)
+    {
+        $middleware = $this->getMiddleware();
+        if (null === $middleware) {
+            throw new Exception('Bad middleware chain');
+        }
+
+        return call_user_func_array($middleware, [$request, [$this, 'processMiddlewares']]);
+    }
+
+    /**
+     * Gte middleware according to class index property.
+     *
+     * @return callable|null Return null if there is no more middleware
+     */
+    private function getMiddleware(): ?callable
+    {
+        if (true === isset($this->middlewares[$this->index])) {
+            $middleware = $this->middlewares[$this->index];
+            $this->index++;
+
+            return $middleware;
+        }
+
+        return null;
     }
 }

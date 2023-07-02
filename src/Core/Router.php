@@ -128,13 +128,14 @@ class Router implements RouterInterface
     /**
      * Will allow routes to be declared in a group, using a suffix
      *
-     * @param  string   $suffix   Group suffix
-     * @param  callable $callable Callable to execute (contains routes declaration)
+     * @param  string   $suffix      Group suffix
+     * @param  callable $callable    Callable to execute (contains routes declaration)
+     * @param  array    $middlewares Middlewares to apply to routes
      * @return mixed
      */
-    public function group(string $suffix, callable $callable)
+    public function group(string $suffix, callable $callable, array $middlewares = [])
     {
-        return $callable(new RouterProxy($suffix, $this));
+        return $callable(new RouterProxy($suffix, $this, $middlewares));
     }
 
     /**
