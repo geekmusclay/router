@@ -9,16 +9,31 @@ use Geekmusclay\Router\Interfaces\RouteInterface;
 use Geekmusclay\Router\Interfaces\RouterInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
+use function count;
+
 class RouterProxy implements RouterInterface
 {
+    /** @var string $suffix The suffix to apply to all group routes */
     private string $suffix;
 
+    /** @var Router $router The router to proxify */
     private Router $router;
 
-    public function __construct(string $suffix, Router $router)
+    /** @var array $middlwares The middlewares to apply to each routes */
+    private array $middlewares;
+
+    /**
+     * Router proxy constructor
+     *
+     * @param string $suffix      The suffix to apply to all group routes
+     * @param Router $router      The router to proxify
+     * @param array  $middlewares The middlewares to apply to each routes
+     */
+    public function __construct(string $suffix, Router $router, array $middlewares = [])
     {
-        $this->suffix = $suffix;
-        $this->router = $router;
+        $this->suffix      = $suffix;
+        $this->router      = $router;
+        $this->middlewares = $middlewares;
     }
 
     /**
@@ -32,7 +47,12 @@ class RouterProxy implements RouterInterface
     {
         $path = $this->suffix . $path;
 
-        return $this->router->get($path, $callable, $name);
+        $route = $this->router->get($path, $callable, $name);
+        if (count($this->middlewares) > 0) {
+            $route->withMiddleware($this->middlewares);
+        }
+
+        return $route;
     }
 
     /**
@@ -94,11 +114,12 @@ class RouterProxy implements RouterInterface
     /**
      * Will allow routes to be declared in a group, using a suffix
      *
-     * @param  string   $suffix   Group suffix
-     * @param  callable $callable Callable to execute (contains routes declaration)
+     * @param  string   $suffix      Group suffix
+     * @param  callable $callable    Callable to execute (contains routes declaration)
+     * @param  array    $middlewares Middlewares to apply to routes
      * @return mixed
      */
-    public function group(string $suffix, callable $callable)
+    public function group(string $suffix, callable $callable, array $middlewares = [])
     {
         $suffix = $this->suffix . $suffix;
 
