@@ -14,20 +14,31 @@ declare(strict_types=1);
 require '../vendor/autoload.php';
 
 use Geekmusclay\DI\Core\Container;
-use Geekmusclay\Router\Core\Router;
 use GuzzleHttp\Psr7\ServerRequest;
+use Geekmusclay\Router\Core\Router;
+use Psr\Http\Message\ServerRequestInterface;
 
 $container = new Container();
 $router = new Router($container);
 
-$router->get('/', function () {
+$router->get('/', function (ServerRequestInterface $request): void {
+    var_dump($request->getQueryParams());
     echo 'Hello World !';
+});
+
+$router->get('/hello', function (ServerRequestInterface $request): void {
+    $name = $request->getQueryParams()['name'] ?? null;
+    if (null === $name) {
+        echo 'Hello World !';
+    } else {
+        echo 'Hello ' . $name . ' !';
+    }
 });
 
 try {
     $router->run(ServerRequest::fromGlobals());
 } catch (Exception $e) {
-    dd($e->getMessage());
+    die($e->getMessage());
 }
 ```
 

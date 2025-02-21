@@ -12,6 +12,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use ReflectionFunction;
 use ReflectionMethod;
 use Safe\Exceptions\PcreException;
 
@@ -134,10 +135,13 @@ class Route implements RouteInterface
      */
     private function getToPass(ServerRequestInterface $request, ResponseInterface $response): array
     {
-        if (false === isset($this->callable[0]) || false === isset($this->callable[1])) {
+        if (is_object($this->callable)) {
+            $reflector = new ReflectionFunction($this->callable);
+        } else if (false === isset($this->callable[0]) || false === isset($this->callable[1])) {
             return [];
+        } else {
+            $reflector = new ReflectionMethod($this->callable[0], $this->callable[1]);
         }
-        $reflector = new ReflectionMethod($this->callable[0], $this->callable[1]);
         $matches   = $this->getMatches();
         $params    = $reflector->getParameters();
 
@@ -180,8 +184,8 @@ class Route implements RouteInterface
         }
 
         $response = new Response();
+        $toPass = $this->getToPass($request, $response);
         if (true === is_array($this->callable) && 2 === count($this->callable)) {
-            $toPass = $this->getToPass($request, $response);
 
             if (null !== $container) {
                 $callable = $container->get($this->callable[0]);
@@ -198,7 +202,7 @@ class Route implements RouteInterface
             );
         }
 
-        return call_user_func_array($this->callable, $this->cast($this->matches));
+        return call_user_func_array($this->callable, $this->cast($toPass));
     }
 
     /**
